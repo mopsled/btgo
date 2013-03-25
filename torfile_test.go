@@ -2,15 +2,16 @@ package btgo
 
 import (
 	"io/ioutil"
+	"math"
 	"testing"
 )
 
 func TestNewTorfile(t *testing.T) {
 	// One-file torrent
-	testOneFileTorrent(t)
+	testUbuntuTorrent(t)
 }
 
-func testOneFileTorrent(t *testing.T) {
+func testUbuntuTorrent(t *testing.T) {
 	file := "test/ubuntu.torrent"
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -43,5 +44,9 @@ func testOneFileTorrent(t *testing.T) {
 	}
 	if firstFile.length != 800063488 {
 		t.Errorf("Wrong length for file in %s: %d", file, firstFile.length)
+	}
+
+	if len(tfile.pieces) != int(math.Ceil(float64(firstFile.length)/float64(tfile.pieceLength))) {
+		t.Errorf("Wrong size of piece slice for %s: %d", file, len(tfile.pieces))
 	}
 }
