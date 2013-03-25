@@ -36,6 +36,10 @@ func TestBuncode(t *testing.T) {
 	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]byte("a"), []interface{}{[]byte("way"), 2, []byte("go")}, []byte("c")}) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
+	s = "l4:pathl4:fileee"
+	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]byte("path"), []interface{}{[]byte("file")}}) {
+		t.Errorf("Doesn't decode %s correctly: %v", s, r)
+	}
 
 	// Dictionaries (maps)
 	s = "d9:publisher3:bob17:publisher-webpage15:www.example.com18:publisher.location4:homee"
