@@ -2,6 +2,7 @@ package btgo
 
 import (
 	"errors"
+	"fmt"
 )
 
 type File struct {
@@ -11,7 +12,6 @@ type File struct {
 
 type Torfile struct {
 	files        []File
-	announce     string
 	announceList []string
 	pieceLength  int
 	pieces       [][20]byte
@@ -30,14 +30,15 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		err = errors.New("Unable to parse announce section of torfile")
 		return
 	}
-
-	var announceList []string = nil
+	announceList := []string{announce}
 	if announceListInterface := m["announce-list"]; announceListInterface != nil {
 		if announceListBytes, ok := announceListInterface.([]interface{}); ok {
-			announceList = make([]string, len(announceListBytes))
-			for i, e := range announceListBytes {
+			for _, e := range announceListBytes {
 				if es, ok := e.([]byte); ok {
-					announceList[i] = string(es)
+					an := string(es)
+					if !inStringSlice(an, announceList) {
+						announceList = append(announceList, an)
+					}
 				}
 			}
 		}
@@ -72,7 +73,7 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
-	tfile = &Torfile{files, announce, announceList, pieceLength, pieces}
+	tfile = &Torfile{files, announceList, pieceLength, pieces}
 	return
 }
 
@@ -90,6 +91,11 @@ func filesFromInfo(info map[string]interface{}) (files []File, err error) {
 			return
 		}
 		files = []File{File{path, length}}
+	} else {
+		_, ok := info["files"].([]map[string]interface{})
+		if ok {
+			fmt.Println("files are okay!")
+		}
 	}
 
 	return
@@ -99,6 +105,16 @@ func stringFromBytesInterface(i interface{}) (s string, ok bool) {
 	var sBytes []byte
 	if sBytes, ok = i.([]byte); ok {
 		s = string(sBytes)
+	}
+	return
+}
+
+func inStringSlice(s string, sl []string) (inSlice bool) {
+	for _, e := range sl {
+		if e == s {
+			inSlice = true
+			return
+		}
 	}
 	return
 }
