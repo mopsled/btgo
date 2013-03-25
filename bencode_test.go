@@ -24,6 +24,10 @@ func TestBencode(t *testing.T) {
 	if s := Bencode(stringSlice); s != "l4:spam4:eggse" {
 		t.Errorf("Doesn't encode %v correctly: %s", stringSlice, s)
 	}
+	singleElementSlice := genSlice("path", genSlice("file"))
+	if s := Bencode(singleElementSlice); s != "l4:pathl4:fileee" {
+		t.Errorf("Doesn't encode %v correctly: %s", stringSlice, s)
+	}
 	multiSlice := genSlice("way", 2, "go")
 	if s := Bencode(multiSlice); s != "l3:wayi2e2:goe" {
 		t.Errorf("Doesn't encode %v correctly: %s", multiSlice, s)
