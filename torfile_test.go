@@ -23,10 +23,6 @@ func testUbuntuTorrent(t *testing.T) {
 		t.Fatalf("Failed to parse test file %s: %s", file, err)
 	}
 
-	if tfile.announce != "http://torrent.ubuntu.com:6969/announce" {
-		t.Errorf("Wrong announce address for %s: %s", file, tfile.announce)
-	}
-
 	if !sameSlice(tfile.announceList, []string{"http://torrent.ubuntu.com:6969/announce", "http://ipv6.torrent.ubuntu.com:6969/announce"}) {
 		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
 	}
