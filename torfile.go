@@ -21,7 +21,7 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 	buncoded := Buncode(file)
 	m, ok := buncoded.(map[string]interface{})
 	if !ok {
-		err = errors.New("Unable to parse torfile")
+		err = errors.New("Buncoding error: unable to parse torfile")
 		return
 	}
 
@@ -96,10 +96,6 @@ func filesFromInfo(info map[string]interface{}) (files []File, err error) {
 }
 
 func stringFromBytesInterface(i interface{}) (s string, ok bool) {
-	if i == nil {
-		return
-	}
-
 	var sBytes []byte
 	if sBytes, ok = i.([]byte); ok {
 		s = string(sBytes)
