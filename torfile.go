@@ -55,12 +55,24 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
+	pieceBytes, ok := info["pieces"].([]byte)
+	if !ok {
+		err = errors.New("Unable to parse piece hashes in torfile")
+		return
+	}
+	hashes := len(pieceBytes) / 20
+	pieces := make([][20]byte, hashes)
+	for i := 0; i < hashes; i += 1 {
+		var piece [20]byte
+		copy(piece[:], pieceBytes[i*20:(i+1)*20])
+	}
+
 	files, err := filesFromInfo(info)
 	if err != nil {
 		return
 	}
 
-	tfile = &Torfile{files, announce, announceList, pieceLength, nil}
+	tfile = &Torfile{files, announce, announceList, pieceLength, pieces}
 	return
 }
 
