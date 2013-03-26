@@ -10,6 +10,7 @@ import (
 func TestNewTorfile(t *testing.T) {
 	// One-file torrents
 	testUbuntuTorrent(t)
+	testBacktrackTorrent(t)
 
 	// Multi-file torrents
 	testMultitracksTorrent(t)
@@ -51,6 +52,42 @@ func testUbuntuTorrent(t *testing.T) {
 
 	if len(tfile.pieces) != int(math.Ceil(float64(firstFile.length.Int64())/float64(tfile.pieceLength.Int64()))) {
 		t.Errorf("Wrong size of piece slice for %s: %d", file, len(tfile.pieces))
+	}
+}
+
+func testBacktrackTorrent(t *testing.T) {
+	file := "test/backtrack.torrent"
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.Fatalf("Failed to open test file %s", file)
+	}
+
+	tfile, err := NewTorfile(content)
+	if err != nil {
+		t.Fatalf("Failed to parse test file %s: %s", file, err)
+	}
+
+	if !sameSlice(tfile.announceList, [][]string{[]string{"http://tracker.backtrack-linux.org/trac/announce.php"}}) {
+		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
+	}
+
+	expected := big.NewInt(262144)
+	if tfile.pieceLength.Cmp(expected) != 0 {
+		t.Errorf("Wrong pieceLength for %s: %d", file, tfile.pieceLength)
+	}
+
+	if len(tfile.files) != 2 {
+		t.Fatalf("Wrong number of files for %s: %d", file, len(tfile.files))
+	}
+
+	expected = big.NewInt(33)
+	if tfile.files[0].path != "BT5R3-GNOME-64/BT5R3-GNOME-64.txt" || tfile.files[0].length.Cmp(expected) != 0 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[0].path, tfile.files[0].length)
+	}
+	expected = new(big.Int)
+	expected.SetString("3306489856", 10)
+	if tfile.files[1].path != "BT5R3-GNOME-64/BT5R3-GNOME-64.iso" || tfile.files[1].length.Cmp(expected) != 0 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[1].path, tfile.files[1].length)
 	}
 }
 
