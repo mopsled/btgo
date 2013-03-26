@@ -1,8 +1,9 @@
 package btgo
 
 import (
+	"bytes"
 	"errors"
-	"fmt"
+	"os"
 )
 
 type File struct {
@@ -12,7 +13,7 @@ type File struct {
 
 type Torfile struct {
 	files        []File
-	announceList []string
+	announceList [][]string
 	pieceLength  int
 	pieces       [][20]byte
 }
@@ -25,23 +26,39 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
-	announce, ok := stringFromBytesInterface(m["announce"])
-	if !ok {
-		err = errors.New("Unable to parse announce section of torfile")
-		return
-	}
-	announceList := []string{announce}
-	if announceListInterface := m["announce-list"]; announceListInterface != nil {
-		if announceListBytes, ok := announceListInterface.([]interface{}); ok {
-			for _, e := range announceListBytes {
-				if es, ok := e.([]byte); ok {
-					an := string(es)
-					if !inStringSlice(an, announceList) {
-						announceList = append(announceList, an)
+	var announceList [][]string
+	if announceListList := m["announce-list"]; announceListList != nil {
+		if announceInterfaceListList, ok := announceListList.([]interface{}); ok {
+			announceList = make([][]string, len(announceInterfaceListList))
+			for i, e := range announceInterfaceListList {
+				if announceInterfaceList, ok := e.([]interface{}); ok {
+					innerAnnounceList := make([]string, len(announceInterfaceList))
+					for in, el := range announceInterfaceList {
+						if announceBytes, ok := el.([]byte); ok {
+							announce := string(announceBytes)
+							innerAnnounceList[in] = announce
+						} else {
+							err = errors.New("Unable to parse announce bytes")
+							return
+						}
 					}
+					announceList[i] = innerAnnounceList
+				} else {
+					err = errors.New("Unable to parse inner announce list")
+					return
 				}
 			}
+		} else {
+			err = errors.New("Unable to parse outer announce list")
+			return
 		}
+	} else {
+		announce, ok := stringFromBytesInterface(m["announce"])
+		if !ok {
+			err = errors.New("Unable to parse announce section of torfile")
+			return
+		}
+		announceList = [][]string{[]string{announce}}
 	}
 
 	info, ok := m["info"].(map[string]interface{})
@@ -78,23 +95,61 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 }
 
 func filesFromInfo(info map[string]interface{}) (files []File, err error) {
-	if info["files"] == nil {
-		path, ok := stringFromBytesInterface(info["name"])
-		if !ok {
-			err = errors.New("Unable to parse path for single-file torrent")
-			return
-		}
+	name, ok := stringFromBytesInterface(info["name"])
+	if !ok {
+		err = errors.New("Unable to parse path for single-file torrent")
+		return
+	}
 
+	if info["files"] == nil {
 		length, ok := info["length"].(int)
 		if !ok {
 			err = errors.New("Unable to parse length for single-file torrent")
 			return
 		}
-		files = []File{File{path, length}}
+		files = []File{File{name, length}}
 	} else {
-		_, ok := info["files"].([]map[string]interface{})
-		if ok {
-			fmt.Println("files are okay!")
+		filesInterfaceList, ok := info["files"].([]interface{})
+		if !ok {
+			err = errors.New("Unable to parse files for multiple-file torrent")
+			return
+		}
+
+		files = make([]File, len(filesInterfaceList))
+		for i, e := range filesInterfaceList {
+			fileInfo, ok := e.(map[string]interface{})
+			if !ok {
+				err = errors.New("Unable to parse file info for multiple-file torrent")
+				return
+			}
+
+			length, ok := fileInfo["length"].(int)
+			if !ok {
+				err = errors.New("Unable to parse file lenfth in multiple-file torrent")
+			}
+
+			pathInterfaces, ok := fileInfo["path"].([]interface{})
+			if !ok {
+				err = errors.New("Unable to parse file path for multiple-file torrent")
+				return
+			}
+			var pathBuffer bytes.Buffer
+			pathBuffer.WriteString(name)
+			pathBuffer.WriteRune(os.PathSeparator)
+			for in, el := range pathInterfaces {
+				pathPiece, ok := el.([]byte)
+				if !ok {
+					err = errors.New("Unable to parse file path piece for multiple-file torrent")
+					return
+				}
+				pathBuffer.Write(pathPiece)
+				if in != len(pathInterfaces)-1 {
+					pathBuffer.WriteRune(os.PathSeparator)
+				}
+			}
+
+			files[i] = File{pathBuffer.String(), length}
+
 		}
 	}
 
@@ -105,16 +160,6 @@ func stringFromBytesInterface(i interface{}) (s string, ok bool) {
 	var sBytes []byte
 	if sBytes, ok = i.([]byte); ok {
 		s = string(sBytes)
-	}
-	return
-}
-
-func inStringSlice(s string, sl []string) (inSlice bool) {
-	for _, e := range sl {
-		if e == s {
-			inSlice = true
-			return
-		}
 	}
 	return
 }
