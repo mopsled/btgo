@@ -73,4 +73,23 @@ func testMultitracksTorrent(t *testing.T) {
 	if len(tfile.files) != 6 {
 		t.Fatalf("Wrong number of files for %s: %d", file, len(tfile.files))
 	}
+
+	if tfile.files[0].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Content/10 - Floppy Disk (feat. Stylver) [Multitracks].rar" || tfile.files[0].length != 753049736 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[0].path, tfile.files[0].length)
+	}
+	if tfile.files[1].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[1].length != 980 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[1].path, tfile.files[1].length)
+	}
+	if tfile.files[2].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[2].length != 45 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[2].path, tfile.files[2].length)
+	}
+	if tfile.files[3].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/flembaz - 10 - floppy disk feat stylver_multitracks.torrent" || tfile.files[3].length != 57987 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[3].path, tfile.files[3].length)
+	}
+	if tfile.files[4].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[4].length != 1170 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[4].path, tfile.files[4].length)
+	}
+	if tfile.files[5].path != "Flembaz - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[5].length != 45 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[5].path, tfile.files[5].length)
+	}
 }
