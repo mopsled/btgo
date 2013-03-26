@@ -3,6 +3,7 @@ package btgo
 import (
 	"bytes"
 	"errors"
+	"math/rand"
 	"os"
 )
 
@@ -42,6 +43,7 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 							return
 						}
 					}
+					shuffleStrings(innerAnnounceList)
 					announceList[i] = innerAnnounceList
 				} else {
 					err = errors.New("Unable to parse inner announce list")
@@ -149,7 +151,6 @@ func filesFromInfo(info map[string]interface{}) (files []File, err error) {
 			}
 
 			files[i] = File{pathBuffer.String(), length}
-
 		}
 	}
 
@@ -162,4 +163,11 @@ func stringFromBytesInterface(i interface{}) (s string, ok bool) {
 		s = string(sBytes)
 	}
 	return
+}
+
+func shuffleStrings(strings []string) {
+	for i := range strings {
+		j := rand.Intn(i + 1)
+		strings[i], strings[j] = strings[j], strings[i]
+	}
 }
