@@ -19,7 +19,7 @@ OUTER:
 	for i := begin; i < len(st); {
 		switch {
 		default:
-			panic(fmt.Sprintf("Didn't expect character '%c' at position %d", st[i], i))
+			panic(fmt.Sprintf("Didn't expect character '%c' at position %d\n", st[i], i))
 		case st[i] == 'i':
 			val, n := parseInt(st, i)
 			elements = append(elements, val)
@@ -31,15 +31,19 @@ OUTER:
 		case st[i] == 'l':
 			inner, n := buncode(st, i+1)
 			v := reflect.ValueOf(inner)
-			elemValue := v.Index(0)
-			if elemValue.Kind() == reflect.Interface {
-				elements = append(elements, inner)
+			if v.Len() == 0 {
+				elements = append(elements, []interface{}{})
+				i, consumed = i+n, consumed+n
 			} else {
-				wrappedInner := []interface{}{inner}
-				elements = append(elements, wrappedInner)
+				elemValue := v.Index(0)
+				if elemValue.Kind() == reflect.Interface {
+					elements = append(elements, inner)
+				} else {
+					wrappedInner := []interface{}{inner}
+					elements = append(elements, wrappedInner)
+				}
+				i, consumed = i+n, consumed+n
 			}
-
-			i, consumed = i+n, consumed+n
 		case st[i] == 'd':
 			innerElements, n := buncode(st, i+1)
 			v := reflect.ValueOf(innerElements)
