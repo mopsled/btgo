@@ -2,7 +2,9 @@ package btgo
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"errors"
+	"io"
 	"math/big"
 	"math/rand"
 	"os"
@@ -17,7 +19,8 @@ type Torfile struct {
 	files        []File
 	announceList [][]string
 	pieceLength  *big.Int
-	pieces       [][20]byte
+	pieces       [][]byte
+	infoHash     []byte
 }
 
 func NewTorfile(file []byte) (tfile *Torfile, err error) {
@@ -70,6 +73,11 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
+	bencodedInfo := Bencode(info)
+	h := sha1.New()
+	io.WriteString(h, bencodedInfo)
+	infoHash := h.Sum(nil)
+
 	pieceLength, ok := info["piece length"].(*big.Int)
 	if !ok {
 		err = errors.New("Unable to parse piece length")
@@ -82,10 +90,10 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 	hashes := len(pieceBytes) / 20
-	pieces := make([][20]byte, hashes)
+	pieces := make([][]byte, hashes)
 	for i := 0; i < hashes; i += 1 {
-		var piece [20]byte
-		copy(piece[:], pieceBytes[i*20:(i+1)*20])
+		pieces[i] = make([]byte, 20)
+		copy(pieces[i][:], pieceBytes[i*20:(i+1)*20])
 	}
 
 	files, err := filesFromInfo(info)
@@ -93,7 +101,7 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
-	tfile = &Torfile{files, announceList, pieceLength, pieces}
+	tfile = &Torfile{files, announceList, pieceLength, pieces, infoHash}
 	return
 }
 
