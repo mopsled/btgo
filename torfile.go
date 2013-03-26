@@ -3,19 +3,20 @@ package btgo
 import (
 	"bytes"
 	"errors"
+	"math/big"
 	"math/rand"
 	"os"
 )
 
 type File struct {
 	path   string
-	length int
+	length *big.Int
 }
 
 type Torfile struct {
 	files        []File
 	announceList [][]string
-	pieceLength  int
+	pieceLength  *big.Int
 	pieces       [][20]byte
 }
 
@@ -69,7 +70,7 @@ func NewTorfile(file []byte) (tfile *Torfile, err error) {
 		return
 	}
 
-	pieceLength, ok := info["piece length"].(int)
+	pieceLength, ok := info["piece length"].(*big.Int)
 	if !ok {
 		err = errors.New("Unable to parse piece length")
 		return
@@ -104,7 +105,7 @@ func filesFromInfo(info map[string]interface{}) (files []File, err error) {
 	}
 
 	if info["files"] == nil {
-		length, ok := info["length"].(int)
+		length, ok := info["length"].(*big.Int)
 		if !ok {
 			err = errors.New("Unable to parse length for single-file torrent")
 			return
@@ -125,7 +126,7 @@ func filesFromInfo(info map[string]interface{}) (files []File, err error) {
 				return
 			}
 
-			length, ok := fileInfo["length"].(int)
+			length, ok := fileInfo["length"].(*big.Int)
 			if !ok {
 				err = errors.New("Unable to parse file lenfth in multiple-file torrent")
 			}
