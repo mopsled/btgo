@@ -1,6 +1,9 @@
 package btgo
 
-import "testing"
+import (
+	"math/big"
+	"testing"
+)
 
 func TestBencode(t *testing.T) {
 	// Strings
@@ -17,6 +20,13 @@ func TestBencode(t *testing.T) {
 	}
 	if s := Bencode(100); s != "i100e" {
 		t.Error("Doesn't encode 100 correctly:", s)
+	}
+
+	// Big Integers
+	expected := new(big.Int)
+	expected.SetString("123456789123456789", 10)
+	if s := Bencode(expected); s != "i123456789123456789e" {
+		t.Error("Doesn't encode 123456789123456789 correctly:", s)
 	}
 
 	// Lists (slices)
