@@ -37,6 +37,10 @@ func TestBuncode(t *testing.T) {
 	if r := Buncode([]byte(s)); !sameSlice(r, []byte("spam")) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
+	s = "13:" + string([]byte{0, 5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 80, 100})
+	if r := Buncode([]byte(s)); !sameSlice(r, []byte{0, 5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 80, 100}) {
+		t.Errorf("Doesn't decode %s correctly: %v", s, r)
+	}
 
 	// Lists (slices)
 	s = "l4:spam4:eggse"
