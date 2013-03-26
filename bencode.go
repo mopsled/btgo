@@ -2,6 +2,7 @@ package btgo
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 	"sort"
 	"strings"
@@ -34,6 +35,12 @@ func Bencode(t interface{}) (bencoded string) {
 			st[key.String()] = v.MapIndex(key).Interface()
 		}
 		bencoded = bencodeMap(st)
+	case reflect.Ptr:
+		b, ok := t.(*big.Int)
+		if !ok {
+			panic(fmt.Sprintf("unexpected pointer passed to Bencode: %T", t))
+		}
+		bencoded = bencodeBigInt(b)
 	}
 
 	return
@@ -45,6 +52,10 @@ func bencodeString(s string) string {
 
 func bencodeInt(i int) string {
 	return fmt.Sprintf("i%de", i)
+}
+
+func bencodeBigInt(i *big.Int) string {
+	return fmt.Sprintf("i%se", i)
 }
 
 func bencodeSlice(s []interface{}) string {
