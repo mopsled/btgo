@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"math"
 	"math/big"
+	"net/url"
 	"testing"
 )
 
@@ -52,6 +53,11 @@ func testUbuntuTorrent(t *testing.T) {
 
 	if len(tfile.pieces) != int(math.Ceil(float64(firstFile.length.Int64())/float64(tfile.pieceLength.Int64()))) {
 		t.Errorf("Wrong size of piece slice for %s: %d", file, len(tfile.pieces))
+	}
+
+	infoHash := url.QueryEscape(string(tfile.infoHash))
+	if infoHash != "%F3l%92%A8%F7%8A%1A%FFp%A6%1A_%5B%FE%5EgW%17a3" {
+		t.Errorf("Wrong info hash for %s: %s", file, infoHash)
 	}
 }
 
