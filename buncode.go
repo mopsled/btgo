@@ -29,7 +29,15 @@ OUTER:
 			i, consumed = i+n, consumed+n
 		case st[i] == 'l':
 			inner, n := buncode(st, i+1)
-			elements = append(elements, inner)
+			v := reflect.ValueOf(inner)
+			elemValue := v.Index(0)
+			if elemValue.Kind() == reflect.Interface {
+				elements = append(elements, inner)
+			} else {
+				wrappedInner := []interface{}{inner}
+				elements = append(elements, wrappedInner)
+			}
+
 			i, consumed = i+n, consumed+n
 		case st[i] == 'd':
 			innerElements, n := buncode(st, i+1)
