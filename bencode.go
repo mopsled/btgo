@@ -21,12 +21,16 @@ func Bencode(t interface{}) (bencoded string) {
 			bencoded = bencodeInt(st)
 		}
 	case reflect.Slice:
-		v := reflect.ValueOf(t)
-		st := make([]interface{}, v.Len())
-		for i := 0; i < v.Len(); i++ {
-			st[i] = interface{}(v.Index(i).Interface())
+		if stringBytes, ok := t.([]byte); ok {
+			bencoded = bencodeString(string(stringBytes))
+		} else {
+			v := reflect.ValueOf(t)
+			st := make([]interface{}, v.Len())
+			for i := 0; i < v.Len(); i++ {
+				st[i] = interface{}(v.Index(i).Interface())
+			}
+			bencoded = bencodeSlice(st)
 		}
-		bencoded = bencodeSlice(st)
 	case reflect.Map:
 		v := reflect.ValueOf(t)
 		st := make(map[string]interface{})
