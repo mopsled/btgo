@@ -10,8 +10,9 @@ func TestNewTorfile(t *testing.T) {
 	// One-file torrent
 	testUbuntuTorrent(t)
 
-	// Multi-file torrent
+	// Multi-file torrents
 	testMultitracksTorrent(t)
+	testStackExchangeTorrent(t)
 }
 
 func testUbuntuTorrent(t *testing.T) {
@@ -91,5 +92,39 @@ func testMultitracksTorrent(t *testing.T) {
 	}
 	if tfile.files[5].path != "Flembaz - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[5].length != 45 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[5].path, tfile.files[5].length)
+	}
+}
+
+func testStackExchangeTorrent(t *testing.T) {
+	file := "test/stack-exchange.torrent"
+	content, err := ioutil.ReadFile(file)
+	if err != nil {
+		t.Fatalf("Failed to open test file %s", file)
+	}
+
+	tfile, err := NewTorfile(content)
+	if err != nil {
+		t.Fatalf("Failed to parse test file %s: %s", file, err)
+	}
+
+	if !sameSlice(tfile.announceList, [][]string{[]string{"http://tracker001.clearbits.net:7070/announce"}}) {
+		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
+	}
+
+	if tfile.pieceLength != 8388608 {
+		t.Errorf("Wrong pieceLength for %s: %d", file, tfile.pieceLength)
+	}
+
+	if len(tfile.files) != 91 {
+		t.Fatalf("Wrong number of files for %s: %d", file, len(tfile.files))
+	}
+	if tfile.files[0].path != "Stack Exchange Data Dump - Mar 2013/Content/android.stackexchange.com.7z" || tfile.files[0].length != 21122632 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[0].path, tfile.files[0].length)
+	}
+	if tfile.files[50].path != "Stack Exchange Data Dump - Mar 2013/Content/meta.ux.stackexchange.com.7z" || tfile.files[50].length != 1089277 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[50].path, tfile.files[50].length)
+	}
+	if tfile.files[90].path != "Stack Exchange Data Dump - Mar 2013/License.txt" || tfile.files[90].length != 48 {
+		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[90].path, tfile.files[90].length)
 	}
 }
