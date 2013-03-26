@@ -2,6 +2,7 @@ package btgo
 
 import (
 	"fmt"
+	"math/big"
 	"reflect"
 	"strconv"
 )
@@ -64,12 +65,13 @@ OUTER:
 	return
 }
 
-func parseInt(st []byte, begin int) (val int, consumed int) {
+func parseInt(st []byte, begin int) (val *big.Int, consumed int) {
 	end := begin
 	for st[end] != 'e' {
 		end++
 	}
-	val, _ = strconv.Atoi(string(st[begin+1 : end]))
+	val = new(big.Int)
+	val.SetString(string(st[begin+1:end]), 10)
 	consumed = end - begin + 1
 	return
 }
