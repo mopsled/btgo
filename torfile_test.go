@@ -3,11 +3,12 @@ package btgo
 import (
 	"io/ioutil"
 	"math"
+	"math/big"
 	"testing"
 )
 
 func TestNewTorfile(t *testing.T) {
-	// One-file torrent
+	// One-file torrents
 	testUbuntuTorrent(t)
 
 	// Multi-file torrents
@@ -31,7 +32,8 @@ func testUbuntuTorrent(t *testing.T) {
 		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
 	}
 
-	if tfile.pieceLength != 524288 {
+	expected := big.NewInt(524288)
+	if tfile.pieceLength.Cmp(expected) != 0 {
 		t.Errorf("Wrong pieceLength for %s: %d", file, tfile.pieceLength)
 	}
 
@@ -42,11 +44,12 @@ func testUbuntuTorrent(t *testing.T) {
 	if firstFile.path != "ubuntu-12.10-desktop-amd64.iso" {
 		t.Errorf("Wrong title for file in %s: %s", file, firstFile.path)
 	}
-	if firstFile.length != 800063488 {
-		t.Errorf("Wrong length for file in %s: %d", file, firstFile.length)
+	expected = big.NewInt(800063488)
+	if firstFile.length.Cmp(expected) != 0 {
+		t.Errorf("Wrong length for file in %s: %d", file, tfile.pieceLength)
 	}
 
-	if len(tfile.pieces) != int(math.Ceil(float64(firstFile.length)/float64(tfile.pieceLength))) {
+	if len(tfile.pieces) != int(math.Ceil(float64(firstFile.length.Int64())/float64(tfile.pieceLength.Int64()))) {
 		t.Errorf("Wrong size of piece slice for %s: %d", file, len(tfile.pieces))
 	}
 }
@@ -67,7 +70,8 @@ func testMultitracksTorrent(t *testing.T) {
 		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
 	}
 
-	if tfile.pieceLength != 262144 {
+	expected := big.NewInt(262144)
+	if tfile.pieceLength.Cmp(expected) != 0 {
 		t.Errorf("Wrong pieceLength for %s: %d", file, tfile.pieceLength)
 	}
 
@@ -75,22 +79,28 @@ func testMultitracksTorrent(t *testing.T) {
 		t.Fatalf("Wrong number of files for %s: %d", file, len(tfile.files))
 	}
 
-	if tfile.files[0].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Content/10 - Floppy Disk (feat. Stylver) [Multitracks].rar" || tfile.files[0].length != 753049736 {
+	expected = big.NewInt(753049736)
+	if tfile.files[0].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Content/10 - Floppy Disk (feat. Stylver) [Multitracks].rar" || tfile.files[0].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[0].path, tfile.files[0].length)
 	}
-	if tfile.files[1].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[1].length != 980 {
+	expected = big.NewInt(980)
+	if tfile.files[1].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[1].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[1].path, tfile.files[1].length)
 	}
-	if tfile.files[2].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[2].length != 45 {
+	expected = big.NewInt(45)
+	if tfile.files[2].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/Flembaz - 10 - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[2].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[2].path, tfile.files[2].length)
 	}
-	if tfile.files[3].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/flembaz - 10 - floppy disk feat stylver_multitracks.torrent" || tfile.files[3].length != 57987 {
+	expected = big.NewInt(57987)
+	if tfile.files[3].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Content/flembaz - 10 - floppy disk feat stylver_multitracks.torrent" || tfile.files[3].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[3].path, tfile.files[3].length)
 	}
-	if tfile.files[4].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[4].length != 1170 {
+	expected = big.NewInt(1170)
+	if tfile.files[4].path != "Flembaz - Floppy Disk feat Stylver_multitracks/Description.txt" || tfile.files[4].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[4].path, tfile.files[4].length)
 	}
-	if tfile.files[5].path != "Flembaz - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[5].length != 45 {
+	expected = big.NewInt(45)
+	if tfile.files[5].path != "Flembaz - Floppy Disk feat Stylver_multitracks/License.txt" || tfile.files[5].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[5].path, tfile.files[5].length)
 	}
 }
@@ -111,20 +121,24 @@ func testStackExchangeTorrent(t *testing.T) {
 		t.Errorf("Wrong announce list for %s: %s", file, tfile.announceList)
 	}
 
-	if tfile.pieceLength != 8388608 {
+	expected := big.NewInt(8388608)
+	if tfile.pieceLength.Cmp(expected) != 0 {
 		t.Errorf("Wrong pieceLength for %s: %d", file, tfile.pieceLength)
 	}
 
 	if len(tfile.files) != 91 {
 		t.Fatalf("Wrong number of files for %s: %d", file, len(tfile.files))
 	}
-	if tfile.files[0].path != "Stack Exchange Data Dump - Mar 2013/Content/android.stackexchange.com.7z" || tfile.files[0].length != 21122632 {
+	expected = big.NewInt(21122632)
+	if tfile.files[0].path != "Stack Exchange Data Dump - Mar 2013/Content/android.stackexchange.com.7z" || tfile.files[0].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[0].path, tfile.files[0].length)
 	}
-	if tfile.files[50].path != "Stack Exchange Data Dump - Mar 2013/Content/meta.ux.stackexchange.com.7z" || tfile.files[50].length != 1089277 {
+	expected = big.NewInt(1089277)
+	if tfile.files[50].path != "Stack Exchange Data Dump - Mar 2013/Content/meta.ux.stackexchange.com.7z" || tfile.files[50].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[50].path, tfile.files[50].length)
 	}
-	if tfile.files[90].path != "Stack Exchange Data Dump - Mar 2013/License.txt" || tfile.files[90].length != 48 {
+	expected = big.NewInt(48)
+	if tfile.files[90].path != "Stack Exchange Data Dump - Mar 2013/License.txt" || tfile.files[90].length.Cmp(expected) != 0 {
 		t.Errorf("Wrong file information for %s: (%s, %d)", file, tfile.files[90].path, tfile.files[90].length)
 	}
 }
