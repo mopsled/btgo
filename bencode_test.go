@@ -14,6 +14,14 @@ func TestBencode(t *testing.T) {
 		t.Error("Doesn't encode 'eggs and such' right:", s)
 	}
 
+	// Byte array strings
+	if s := Bencode([]byte("spam")); s != "4:spam" {
+		t.Error("Doesn't encode spam right:", s)
+	}
+	if s := Bencode([]byte("eggs and such")); s != "13:eggs and such" {
+		t.Error("Doesn't encode 'eggs and such' right:", s)
+	}
+
 	// Integers
 	if s := Bencode(3); s != "i3e" {
 		t.Error("Doesn't encode 3 correctly:", s)
