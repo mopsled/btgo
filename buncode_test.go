@@ -2,18 +2,29 @@ package btgo
 
 import (
 	"fmt"
-	"io/ioutil"
+	"math/big"
 	"testing"
 )
 
 func TestBuncode(t *testing.T) {
 	// Integers
 	s := "i3e"
-	if r := Buncode([]byte(s)); r != 3 {
+	expected := big.NewInt(3)
+	r, ok := Buncode([]byte(s)).(*big.Int)
+	if !ok || r.Cmp(expected) != 0 {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
 	s = "i123456e"
-	if r := Buncode([]byte(s)); r != 123456 {
+	expected = big.NewInt(123456)
+	r, ok = Buncode([]byte(s)).(*big.Int)
+	if !ok || r.Cmp(expected) != 0 {
+		t.Errorf("Doesn't decode %s correctly: %v", s, r)
+	}
+	s = "i3306489856e"
+	expected = new(big.Int)
+	expected.SetString("3306489856", 10)
+	r, ok = Buncode([]byte(s)).(*big.Int)
+	if !ok || r.Cmp(expected) != 0 {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
 
@@ -33,7 +44,7 @@ func TestBuncode(t *testing.T) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
 	s = "l1:al3:wayi2e2:goe1:ce"
-	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]byte("a"), []interface{}{[]byte("way"), 2, []byte("go")}, []byte("c")}) {
+	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]byte("a"), []interface{}{[]byte("way"), big.NewInt(2), []byte("go")}, []byte("c")}) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
 	s = "l4:pathl4:fileee"
@@ -46,27 +57,6 @@ func TestBuncode(t *testing.T) {
 	d, ok := Buncode([]byte(s)).(map[string]interface{})
 	if !ok && (!sameSlice(d["publisher"], []byte("bob")) || !sameSlice(d["publisher-webpage"], []byte("www.example.com")) || !sameSlice(d["publisher.location"], []byte("home"))) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, d)
-	}
-
-	// File tests (.torrent files)
-	content, err := ioutil.ReadFile("test/ubuntu.torrent")
-	worked := false
-	if err == nil {
-		r := Buncode(content)
-		m, ok := r.(map[string]interface{})
-		if ok {
-			info, ok2 := m["info"].(map[string]interface{})
-			if ok2 {
-				name, ok3 := info["name"]
-				length, ok4 := info["length"].(int)
-				if ok3 && ok4 && sameSlice(name, []byte("ubuntu-12.10-desktop-amd64.iso")) && length == 800063488 {
-					worked = true
-				}
-			}
-		}
-	}
-	if !worked {
-		t.Errorf("Doesn't decode ubuntu.torrent correctly")
 	}
 }
 
