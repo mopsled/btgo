@@ -31,19 +31,23 @@ OUTER:
 		case st[i] == 'l':
 			inner, n := buncode(st, i+1)
 			v := reflect.ValueOf(inner)
-			if v.Len() == 0 {
-				elements = append(elements, []interface{}{})
-				i, consumed = i+n, consumed+n
-			} else {
-				elemValue := v.Index(0)
-				if elemValue.Kind() == reflect.Interface {
-					elements = append(elements, inner)
+			if v.Kind() == reflect.Slice {
+				if v.Len() == 0 {
+					elements = append(elements, []interface{}{})
 				} else {
-					wrappedInner := []interface{}{inner}
-					elements = append(elements, wrappedInner)
+					elemValue := v.Index(0)
+					if elemValue.Kind() == reflect.Interface {
+						elements = append(elements, inner)
+					} else {
+						wrappedInner := []interface{}{inner}
+						elements = append(elements, wrappedInner)
+					}
 				}
-				i, consumed = i+n, consumed+n
+			} else {
+				wrappedInner := []interface{}{inner}
+				elements = append(elements, wrappedInner)
 			}
+			i, consumed = i+n, consumed+n
 		case st[i] == 'd':
 			innerElements, n := buncode(st, i+1)
 			v := reflect.ValueOf(innerElements)
