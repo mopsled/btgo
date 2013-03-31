@@ -59,6 +59,10 @@ func TestBuncode(t *testing.T) {
 	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{1}) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
 	}
+	s = "lli2eee"
+	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]interface{}{2}}) {
+		t.Errorf("Doesn't decode %s correctly: %v", s, r)
+	}
 	s = "l4:look4:it's5:emptylee"
 	if r := Buncode([]byte(s)); !sameSlice(r, []interface{}{[]byte("look"), []byte("it's"), []byte("empty"), []interface{}{}}) {
 		t.Errorf("Doesn't decode %s correctly: %v", s, r)
