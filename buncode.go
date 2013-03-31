@@ -8,11 +8,11 @@ import (
 )
 
 func Buncode(s []byte) (buncoded interface{}) {
-	buncoded, _ = buncode(s, 0)
+	buncoded, _, _ = buncode(s, 0)
 	return
 }
 
-func buncode(st []byte, begin int) (buncoded interface{}, consumed int) {
+func buncode(st []byte, begin int) (buncoded interface{}, consumed int, unlistified bool) {
 	elements := make([]interface{}, 0)
 
 OUTER:
@@ -29,18 +29,17 @@ OUTER:
 			elements = append(elements, str)
 			i, consumed = i+n, consumed+n
 		case st[i] == 'l':
-			inner, n := buncode(st, i+1)
+			inner, n, unlisted := buncode(st, i+1)
 			v := reflect.ValueOf(inner)
 			if v.Kind() == reflect.Slice {
 				if v.Len() == 0 {
 					elements = append(elements, []interface{}{})
 				} else {
-					elemValue := v.Index(0)
-					if elemValue.Kind() == reflect.Interface {
-						elements = append(elements, inner)
-					} else {
+					if unlisted {
 						wrappedInner := []interface{}{inner}
 						elements = append(elements, wrappedInner)
+					} else {
+						elements = append(elements, inner)
 					}
 				}
 			} else {
@@ -49,7 +48,7 @@ OUTER:
 			}
 			i, consumed = i+n, consumed+n
 		case st[i] == 'd':
-			innerElements, n := buncode(st, i+1)
+			innerElements, n, _ := buncode(st, i+1)
 			v := reflect.ValueOf(innerElements)
 			d := make(map[string]interface{})
 			for j := 0; j < v.Len(); j += 2 {
@@ -67,6 +66,7 @@ OUTER:
 
 	if len(elements) == 1 {
 		buncoded = elements[0]
+		unlistified = true
 	} else {
 		buncoded = elements
 	}
